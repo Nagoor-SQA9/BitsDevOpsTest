@@ -1,0 +1,41 @@
+pipeline {
+  agent any
+  environment {
+    STAGING_ENV_FILE = 'path/to/staging.env'
+    PROD_ENV_FILE = 'path/to/prod.env'
+  }
+  stages {
+    stage('Build') {
+      steps {
+        sh 'mvn clean package'
+      }
+    }
+    stage('Test') {
+      steps {
+        sh 'Test'
+      }
+    }
+    stage('Deploy - Staging') {
+      when {
+        expression {
+          GIT_BRANCH == 'staging'
+        }
+      }
+      steps {
+        sh 'cat ${STAGING_ENV_FILE}'
+        sh 'deploy-to-staging.sh'
+      }
+    }
+    stage('Deploy - Production') {
+      when {
+        expression {
+          GIT_BRANCH == 'master'
+        }
+      }
+      steps {
+        sh 'cat ${PROD_ENV_FILE}'
+        sh 'deploy-to-production.sh'
+      }
+    }
+  }
+}
